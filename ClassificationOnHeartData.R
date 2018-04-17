@@ -29,7 +29,7 @@ mosaicplot(heart$sex ~ heart$num,
            main="Fate by Gender", shade=FALSE,color=TRUE,
            xlab="Gender", ylab="Heart disease")
 
-B<-5
+B<-10
 ERRMAT<-matrix(0,B,7)
 
 ctrl<-trainControl(method="cv",summaryFunction=multiClassSummary)
