@@ -23,23 +23,23 @@ convert.magic <- function(obj,types){
 heart.data <- na.omit(heart.data)
 heart.data <- convert.magic(heart.data,chclass)
 heart = heart.data #add labels only for plot
-levels(heart$num) = c("No disease","Disease")
-levels(heart$sex) = c("female","male","")
+levels(heart.data$num) <- c("NoHD","HD")
+levels(heart.data$sex) <- c("female","male")
 mosaicplot(heart$sex ~ heart$num,
            main="Fate by Gender", shade=FALSE,color=TRUE,
            xlab="Gender", ylab="Heart disease")
 
 B<-5
-ERRMAT<-matrix(0,B,8)
+ERRMAT<-matrix(0,B,7)
 
 ctrl<-trainControl(method="cv",summaryFunction=multiClassSummary)
 
 for (b in (1:B)) {
   inTrainRows <- createDataPartition(heart.data$num,p=0.7,list=FALSE)
-  trainData <- heart.data[inTrainRows,]
-  testData <-  heart.data[-inTrainRows,-14]
-  trainDataY <- heart.data$num[inTrainRows]
-  testDataY <- heart.data$num[-inTrainRows]
+  trainData <- na.omit(heart.data[inTrainRows,])
+  testData <-  na.omit(heart.data[-inTrainRows,-14])
+  trainDataY <- na.omit(heart.data$num[inTrainRows])
+  testDataY <- na.omit(heart.data$num[-inTrainRows])
   fit<-train(num~.,data=trainData,method="rpart",tuneLength=15,trControl=ctrl)
   pp<-predict(fit,newdata=testData,type="raw")
   ERRMAT[b,1]<-length(pp[pp!=testDataY])/length(pp)
@@ -52,20 +52,20 @@ for (b in (1:B)) {
   fit<-train(num~.,data=trainData,method="lda",tuneLength=15,trControl=ctrl)
   pp<-predict(fit,newdata=testData,type="raw")
   ERRMAT[b,4]<-length(pp[pp!=testDataY])/length(pp)
-  fit<-train(num~.,data=trainData,method="qda",tuneLength=15,trControl=ctrl)
-  pp<-predict(fit,newdata=testData,type="raw")
-  ERRMAT[b,5]<-length(pp[pp!=testDataY])/length(pp)
+  # fit<-train(num~.,data=trainData,method="qda",tuneLength=15,trControl=ctrl)
+  # pp<-predict(fit,newdata=testData,type="raw")
+  # ERRMAT[b,5]<-length(pp[pp!=testDataY])/length(pp)
   fit<-train(num~.,data=trainData,method="pda",tuneLength=15,trControl=ctrl)
   pp<-predict(fit,newdata=testData,type="raw")
-  ERRMAT[b,6]<-length(pp[pp!=testDataY])/length(pp)
+  ERRMAT[b,5]<-length(pp[pp!=testDataY])/length(pp)
   fit<-train(num~.,data=trainData,method="nb",tuneLength=15,trControl=ctrl)
   pp<-predict(fit,newdata=testData,type="raw")
-  ERRMAT[b,7]<-length(pp[pp!=testDataY])/length(pp)
+  ERRMAT[b,6]<-length(pp[pp!=testDataY])/length(pp)
   fit<-train(num~.,data=trainData,method="mda",tuneLength=15,trControl=ctrl)
   pp<-predict(fit,newdata=testData,type="raw")
-  ERRMAT[b,8]<-length(pp[pp!=testDataY])/length(pp)
+  ERRMAT[b,7]<-length(pp[pp!=testDataY])/length(pp)
   print(b)
 }
 par(mfrow=c(1,1))
-boxplot(ERRMAT,names=c("CART","RF","knn","lda","qda","pda","nb","mda"))
+boxplot(ERRMAT,names=c("CART","RF","knn","lda","pda","nb","mda"))
 #
